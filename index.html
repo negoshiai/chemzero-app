@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemZero | AI-Powered Chemical R&D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-navy: #020c1b;
+            --navy: #0a192f;
+            --light-navy: #112240;
+            --lightest-navy: #233554;
+            --slate: #8892b0;
+            --light-slate: #a8b2d1;
+            --lightest-slate: #ccd6f6;
+            --white: #e6f1ff;
+            --cyan: #64ffda;
+            --font-sans: 'Poppins', sans-serif;
+            --font-mono: 'Space Grotesk', sans-serif;
+            --fz-xxl: 22px;
+            --fz-xl: 20px;
+            --fz-lg: 18px;
+            --fz-md: 16px;
+            --fz-sm: 14px;
+            --fz-xs: 12px;
+            --border-radius: 4px;
+            --nav-height: 100px;
+            --nav-scroll-height: 70px;
+            --tab-height: 42px;
+            --tab-width: 120px;
+            --easing: cubic-bezier(0.645, 0.045, 0.355, 1);
+            --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+            --hamburger-width: 30px;
+            --ham-before: top 0.1s ease-in 0.25s, opacity 0.1s ease-in;
+            --ham-before-active: top 0.1s ease-out, opacity 0.1s ease-out 0.12s;
+            --ham-after: bottom 0.1s ease-in 0.25s, transform 0.22s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+            --ham-after-active: bottom 0.1s ease-out, transform 0.22s cubic-bezier(0.215, 0.61, 0.355, 1) 0.12s;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            background-color: var(--navy);
+            color: var(--slate);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        .cursor-dot, .cursor-dot-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--cyan);
+        }
+        .cursor-dot-outline {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(100, 255, 218, 0.2);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: var(--navy); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--lightest-navy); border-radius: 10px; border: 3px solid var(--navy); }
+
+        main {
+            padding: 0 150px;
+        }
+
+        section {
+            margin: 0 auto;
+            padding: 100px 0;
+            max-width: 1000px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s var(--easing), transform 0.6s var(--easing);
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-mono);
+            color: var(--lightest-slate);
+            margin: 0 0 20px;
+            font-weight: 700;
+        }
+        
+        .section-heading {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin: 10px 0 40px;
+            width: 100%;
+            font-size: clamp(26px, 5vw, 32px);
+            white-space: nowrap;
+        }
+        .section-heading::after {
+            content: '';
+            display: block;
+            position: relative;
+            top: 0;
+            width: 300px;
+            height: 1px;
+            margin-left: 20px;
+            background-color: var(--lightest-navy);
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 1rem 1.75rem;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            background-color: transparent;
+            font-family: var(--font-mono);
+            font-size: var(--fz-sm);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+        .button:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.3);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            z-index: 11;
+            padding: 0 50px;
+            width: 100%;
+            height: var(--nav-height);
+            background-color: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+        .logo {
+            font-family: var(--font-mono);
+            color: var(--cyan);
+            font-size: 28px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links li {
+            margin: 0 15px;
+            font-family: var(--font-mono);
+            font-size: var(--fz-sm);
+        }
+        .nav-links li a {
+            color: var(--lightest-slate);
+            text-decoration: none;
+            transition: var(--transition);
+            padding: 10px;
+        }
+        .nav-links li a:hover {
+            color: var(--cyan);
+        }
+        .nav-links li a span {
+            color: var(--cyan);
+        }
+        
+        /* Hamburger Menu */
+        .hamburger-menu {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 12;
+            margin-right: -15px;
+            padding: 15px;
+            border: 0;
+            background-color: transparent;
+            color: inherit;
+            text-transform: none;
+            transition-timing-function: linear;
+            transition-duration: 0.15s;
+            transition-property: opacity, filter;
+        }
+        .hamburger-box {
+            display: inline-block;
+            position: relative;
+            width: var(--hamburger-width);
+            height: 24px;
+        }
+        .hamburger-inner {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: var(--hamburger-width);
+            height: 2px;
+            border-radius: var(--border-radius);
+            background-color: var(--cyan);
+            transition-duration: 0.22s;
+            transition-property: transform;
+            transition-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+        }
+        .hamburger-inner::before, .hamburger-inner::after {
+            content: '';
+            display: block;
+            position: absolute;
+            left: auto;
+            right: 0;
+            width: var(--hamburger-width);
+            height: 2px;
+            border-radius: var(--border-radius);
+            background-color: var(--cyan);
+            transition-timing-function: ease;
+            transition-duration: 0.15s;
+            transition-property: transform;
+        }
+        .hamburger-inner::before {
+            width: 120%;
+            top: -10px;
+            transition: var(--ham-before);
+        }
+        .hamburger-inner::after {
+            width: 80%;
+            bottom: -10px;
+            transition: var(--ham-after);
+        }
+        .hamburger-menu.is-active .hamburger-inner {
+            transform: rotate(225deg);
+            transition-delay: 0.12s;
+            transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+        .hamburger-menu.is-active .hamburger-inner::before {
+            width: 100%;
+            top: 0;
+            opacity: 0;
+            transition: var(--ham-before-active);
+        }
+        .hamburger-menu.is-active .hamburger-inner::after {
+            width: 100%;
+            bottom: 0;
+            transform: rotate(-90deg);
+            transition: var(--ham-after-active);
+        }
+
+        /* Mobile Nav */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100vw;
+            width: min(75vw, 400px);
+            height: 100vh;
+            background-color: var(--light-navy);
+            box-shadow: -10px 0 30px -15px rgba(2, 12, 27, 0.7);
+            z-index: 9;
+            transition: var(--transition);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            visibility: hidden;
+        }
+        .mobile-nav.is-open {
+            right: 0;
+            visibility: visible;
+        }
+        .mobile-nav ol {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            width: 100%;
+            text-align: center;
+        }
+        .mobile-nav ol li {
+            position: relative;
+            margin: 0 auto 20px;
+            font-size: clamp(var(--fz-sm), 4vw, var(--fz-lg));
+        }
+        .mobile-nav ol li a {
+            display: inline-block;
+            text-decoration: none;
+            color: var(--lightest-slate);
+            padding: 3px 20px 20px;
+            width: 100%;
+        }
+
+        /* Hero Section */
+        #hero {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 0;
+            position: relative;
+        }
+        #hero h1 {
+            margin: 0 0 30px 4px;
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: var(--fz-md);
+            font-weight: 400;
+        }
+        #hero h2 {
+            font-size: clamp(40px, 8vw, 80px);
+            margin-bottom: 10px;
+        }
+        #hero h3 {
+            font-size: clamp(40px, 8vw, 80px);
+            color: var(--slate);
+        }
+        #hero .subtitle {
+            margin-top: 5px;
+            color: var(--slate);
+            line-height: 1.5;
+            max-width: 540px;
+        }
+        .hero-button {
+            margin-top: 50px;
+        }
+        .hero-bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(100,255,218,0.1) 0%, rgba(10,25,47,0) 60%);
+            z-index: -1;
+        }
+        .shape1 { top: 10%; left: 5%; width: 400px; height: 400px; animation: pulse 8s infinite ease-in-out; }
+        .shape2 { bottom: 15%; right: 10%; width: 300px; height: 300px; animation: pulse 10s infinite ease-in-out 2s; }
+        .shape3 { top: 50%; left: 50%; width: 500px; height: 500px; animation: pulse 12s infinite ease-in-out 1s; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 50px;
+        }
+        .about-text p {
+            margin-bottom: 15px;
+        }
+        .about-image {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .about-image .wrapper {
+            display: block;
+            position: relative;
+            width: 100%;
+            border-radius: var(--border-radius);
+            background-color: var(--cyan);
+        }
+        .about-image .wrapper::before, .about-image .wrapper::after {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+        .about-image .wrapper::before {
+            top: 0;
+            left: 0;
+            background-color: var(--navy);
+            mix-blend-mode: screen;
+        }
+        .about-image .wrapper::after {
+            border: 2px solid var(--cyan);
+            top: 14px;
+            left: 14px;
+            z-index: -1;
+        }
+        .about-image img {
+            position: relative;
+            border-radius: var(--border-radius);
+            mix-blend-mode: multiply;
+            filter: grayscale(100%) contrast(1);
+            width: 100%;
+            display: block;
+        }
+
+        /* Services Section */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .service-card {
+            background-color: var(--light-navy);
+            padding: 2rem 1.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            box-shadow: 0 10px 30px -15px rgba(2, 12, 27, 0.7);
+        }
+        .service-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 0 20px -5px rgba(100, 255, 218, 0.3);
+        }
+        .service-icon {
+            color: var(--cyan);
+            margin-bottom: 20px;
+        }
+        .service-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+        .service-card h3 {
+            font-size: var(--fz-xl);
+            margin-bottom: 10px;
+        }
+        .service-card p {
+            font-size: var(--fz-sm);
+        }
+
+        /* Case Studies Section */
+        .case-studies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            position: relative;
+        }
+        .case-study-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--border-radius);
+            background-color: var(--light-navy);
+        }
+        .case-study-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+            filter: grayscale(80%) brightness(0.6);
+        }
+        .case-study-item:hover img {
+            transform: scale(1.05);
+            filter: grayscale(0%) brightness(0.4);
+        }
+        .case-study-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 20px;
+            color: var(--white);
+            width: 100%;
+            box-sizing: border-box;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+        .case-study-content h3 {
+            font-size: var(--fz-lg);
+            color: var(--white);
+            margin-bottom: 5px;
+        }
+        .case-study-content span {
+            font-family: var(--font-mono);
+            font-size: var(--fz-xs);
+            color: var(--cyan);
+        }
+
+        /* ROI Calculator Section */
+        .calculator-wrapper {
+            background-color: var(--light-navy);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        .calculator-form .form-group {
+            margin-bottom: 20px;
+        }
+        .calculator-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-family: var(--font-mono);
+            font-size: var(--fz-sm);
+        }
+        .calculator-form input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--navy);
+            border: 1px solid var(--lightest-navy);
+            border-radius: var(--border-radius);
+            color: var(--white);
+            font-size: var(--fz-md);
+            box-sizing: border-box;
+        }
+        .calculator-result {
+            text-align: center;
+            border-left: 1px solid var(--lightest-navy);
+            padding-left: 40px;
+        }
+        .calculator-result p {
+            font-size: var(--fz-lg);
+            color: var(--light-slate);
+        }
+        .calculator-result .result-amount {
+            font-size: clamp(30px, 5vw, 50px);
+            font-family: var(--font-mono);
+            color: var(--cyan);
+            font-weight: 700;
+            margin: 10px 0;
+            display: block;
+        }
+
+        /* Contact Section */
+        #contact {
+            text-align: center;
+            max-width: 600px;
+        }
+        #contact h2 {
+            font-size: clamp(40px, 5vw, 60px);
+        }
+        #contact p {
+            margin-bottom: 50px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 25px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: var(--fz-xs);
+        }
+        .footer-socials {
+            display: none; /* Show for desktop if needed */
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .footer-socials a {
+            padding: 10px;
+            color: var(--slate);
+        }
+        .footer-socials a:hover {
+            color: var(--cyan);
+        }
+        .footer-socials svg {
+            width: 20px;
+            height: 20px;
+        }
+        .footer-credit a {
+            color: var(--slate);
+            text-decoration: none;
+        }
+        .footer-credit a:hover {
+            color: var(--cyan);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1080px) {
+            main { padding: 0 100px; }
+        }
+
+        @media (max-width: 768px) {
+            main { padding: 0 50px; }
+            .header { padding: 0 25px; }
+            .nav-links { display: none; }
+            .hamburger-menu { display: flex; }
+            .mobile-nav { display: flex; }
+            .blur {
+                overflow: hidden;
+                filter: blur(5px) brightness(0.7);
+                transition: var(--transition);
+            }
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .about-image {
+                grid-row: 1;
+            }
+            .calculator-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .calculator-result {
+                border-left: none;
+                border-top: 1px solid var(--lightest-navy);
+                padding-left: 0;
+                padding-top: 40px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            main { padding: 0 25px; }
+        }
+    </style>
+</head>
+<body class="custom-scrollbar">
+
+    <div class="cursor-dot"></div>
+    <div class="cursor-dot-outline"></div>
+
+    <header class="header">
+        <a href="/" class="logo">ChemZero</a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#about"><span>01.</span> About</a></li>
+                <li><a href="#solutions"><span>02.</span> Solutions</a></li>
+                <li><a href="#casestudies"><span>03.</span> Case Studies</a></li>
+                <li><a href="#contact"><span>04.</span> Contact</a></li>
+            </ul>
+            <div class="hamburger-menu">
+                <div class="hamburger-box">
+                    <div class="hamburger-inner"></div>
+                </div>
+            </div>
+            <aside class="mobile-nav">
+                <ol>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#solutions">Solutions</a></li>
+                    <li><a href="#casestudies">Case Studies</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ol>
+            </aside>
+        </nav>
+    </header>
+
+    <div id="content">
+        <main>
+            <section id="hero">
+                <div class="hero-bg-shape shape1"></div>
+                <div class="hero-bg-shape shape2"></div>
+                <div class="hero-bg-shape shape3"></div>
+                <h1>Welcome to ChemZero,</h1>
+                <h2>We Power Chemical Innovation.</h2>
+                <h3 id="hero-subtitle"></h3>
+                <p class="subtitle">Our AI-powered platform delivers faster, more accurate results, empowering you to streamline your chemical research and development with confidence.</p>
+                <a href="#contact" class="button hero-button">Request a Demo</a>
+            </section>
+
+            <section id="about">
+                <h2 class="section-heading">About Us</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>ChemZero is driven by a passion for advancing scientific discovery. Founded by a team of chemists and AI experts, our mission is to provide cutting-edge solutions that accelerate research and development cycles.</p>
+                        <p>We believe that by integrating artificial intelligence into the core of chemical research, we can unlock unprecedented levels of efficiency, accuracy, and innovation. Our platform is designed to be an intuitive partner for scientists, automating tedious tasks and revealing insights hidden within complex data.</p>
+                        <p>Our commitment is to empower researchers and organizations to solve the world's most pressing challenges, from developing life-saving pharmaceuticals to creating sustainable materials.</p>
+                    </div>
+                    <div class="about-image">
+                        <div class="wrapper">
+                            <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Team working">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="solutions">
+                <h2 class="section-heading">Our AI-Powered Suite</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <h3>AI Predictive Analysis</h3>
+                        <p>Leverage machine learning to predict compound properties, reaction outcomes, and synthesis pathways, saving valuable time and resources.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <h3>Automated Experimentation</h3>
+                        <p>Integrate with lab hardware to automate experiment execution, data collection, and analysis, enabling high-throughput screening.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                        </div>
+                        <h3>Advanced Data Visualization</h3>
+                        <p>Transform complex datasets into intuitive, interactive visualizations. Identify trends and correlations that are invisible to the naked eye.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
+                        </div>
+                        <h3>Seamless Lab Integration</h3>
+                        <p>Our robust API allows for easy integration with your existing LIMS, ELNs, and other research software, creating a unified digital ecosystem.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="casestudies">
+                <h2 class="section-heading">Success Stories</h2>
+                <div class="case-studies-grid">
+                    <div class="case-study-item">
+                        <img src="https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Pharma Company Lab">
+                        <div class="case-study-content">
+                            <h3>PharmaCorp</h3>
+                            <span>+45% Drug Discovery Efficiency</span>
+                        </div>
+                    </div>
+                    <div class="case-study-item">
+                        <img src="https://images.unsplash.com/photo-1616401784845-180844d15609?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Materials Science Lab">
+                        <div class="case-study-content">
+                            <h3>Innovate Materials</h3>
+                            <span>Reduced R&D Costs by 30%</span>
+                        </div>
+                    </div>
+                    <div class="case-study-item">
+                        <img src="https://images.unsplash.com/photo-1532187643623-dbf2f354d48a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="AgroChemical Lab">
+                        <div class="case-study-content">
+                            <h3>AgroChem Solutions</h3>
+                            <span>Accelerated Time-to-Market by 6 Months</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="calculator">
+                <h2 class="section-heading">Estimate Your ROI</h2>
+                <div class="calculator-wrapper">
+                    <div class="calculator-form">
+                        <div class="form-group">
+                            <label for="experiments">Avg. Experiments / Month</label>
+                            <input type="number" id="experiments" placeholder="e.g., 500">
+                        </div>
+                        <div class="form-group">
+                            <label for="cost">Avg. Cost / Experiment ($)</label>
+                            <input type="number" id="cost" placeholder="e.g., 1500">
+                        </div>
+                        <div class="form-group">
+                            <label for="researchers">Number of Researchers</label>
+                            <input type="number" id="researchers" placeholder="e.g., 10">
+                        </div>
+                    </div>
+                    <div class="calculator-result">
+                        <p>Estimated Annual Savings with ChemZero</p>
+                        <span class="result-amount" id="result-amount">$0</span>
+                        <p>Based on an average 30% reduction in experimental costs and a 20% increase in researcher productivity.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="contact">
+                <h2>Get In Touch</h2>
+                <p>Ready to revolutionize your research process? Contact us today to schedule a demo or speak with one of our experts. We're here to help you achieve your scientific goals faster and more efficiently.</p>
+                <a href="mailto:contact@chemzeroapp.com" class="button">Contact Us</a>
+            </section>
+        </main>
+        
+        <footer class="footer">
+            <div class="footer-socials">
+                <a href="#"><svg xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+                <a href="#"><svg xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-twitter"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a>
+            </div>
+            <div class="footer-credit">
+                <span>&copy; 2024 ChemZero. All Rights Reserved.</span>
+            </div>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- CURSOR EFFECT ---
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorDotOutline = document.querySelector('.cursor-dot-outline');
+            let cursorVisible = false;
+
+            window.addEventListener('mousemove', e => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+
+                if (!cursorVisible) {
+                    cursorDot.style.opacity = '1';
+                    cursorDotOutline.style.opacity = '1';
+                    cursorVisible = true;
+                }
+
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+
+                cursorDotOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: 'forwards' });
+            });
+
+            document.querySelectorAll('a, button, input').forEach(el => {
+                el.addEventListener('mouseover', () => {
+                    cursorDotOutline.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursorDotOutline.style.backgroundColor = 'rgba(100, 255, 218, 0.4)';
+                });
+                el.addEventListener('mouseout', () => {
+                    cursorDotOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorDotOutline.style.backgroundColor = 'rgba(100, 255, 218, 0.2)';
+                });
+            });
+
+            // --- SCROLL REVEAL ANIMATIONS ---
+            const sections = document.querySelectorAll('section');
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // --- HERO TYPEWRITER EFFECT ---
+            const subtitleEl = document.getElementById('hero-subtitle');
+            const text = "We build AI-driven solutions.";
+            let i = 0;
+            function typeWriter() {
+                if (i < text.length) {
+                    subtitleEl.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 100);
+                }
+            }
+            setTimeout(typeWriter, 1000);
+
+            // --- HAMBURGER MENU ---
+            const hamburgerMenu = document.querySelector('.hamburger-menu');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const mainContent = document.querySelector('#content');
+
+            hamburgerMenu.addEventListener('click', () => {
+                hamburgerMenu.classList.toggle('is-active');
+                mobileNav.classList.toggle('is-open');
+                mainContent.classList.toggle('blur');
+                document.body.classList.toggle('custom-scrollbar');
+                document.body.style.overflow = mobileNav.classList.contains('is-open') ? 'hidden' : 'auto';
+            });
+
+            document.querySelectorAll('.mobile-nav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburgerMenu.classList.remove('is-active');
+                    mobileNav.classList.remove('is-open');
+                    mainContent.classList.remove('blur');
+                    document.body.style.overflow = 'auto';
+                });
+            });
+
+            // --- ROI CALCULATOR ---
+            const experimentsInput = document.getElementById('experiments');
+            const costInput = document.getElementById('cost');
+            const researchersInput = document.getElementById('researchers');
+            const resultAmountEl = document.getElementById('result-amount');
+
+            function calculateROI() {
+                const experiments = parseFloat(experimentsInput.value) || 0;
+                const cost = parseFloat(costInput.value) || 0;
+                const researchers = parseFloat(researchersInput.value) || 0;
+
+                if (experiments > 0 && cost > 0 && researchers > 0) {
+                    const experimentalSavings = (experiments * 12 * cost) * 0.30;
+                    const productivitySavings = (researchers * 80000) * 0.20; // Assuming avg researcher salary of $80k
+                    const totalSavings = experimentalSavings + productivitySavings;
+                    
+                    resultAmountEl.textContent = `$${totalSavings.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+                } else {
+                    resultAmountEl.textContent = '$0';
+                }
+            }
+            [experimentsInput, costInput, researchersInput].forEach(input => {
+                input.addEventListener('input', calculateROI);
+            });
+        });
+    </script>
+</body>
+</html>
